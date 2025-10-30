@@ -14,44 +14,65 @@ const music = new Audio();
 
 const songs = [
     {
-        path: "assets/1.mp3",
-        displayName: "The Charmer's Call",
-        cover: "assets/1.jpg",
-        artist: "Hanu Dixit"
-    },
-
-    {
-        path: "assets/2.mp3",
-        displayName: "You Will Never See Me Coming",
-        cover: "assets/2.jpg",
-        artist: "NEFFEX"
-    },
-
-    {
-        path: "assets/3.mp3",
-        displayName: "Intellect",
-        cover: "assets/3.jpg",
-        artist: "Yung Logos"
-    },
-
-    {
-        path: "assets/4.mp3",
-        displayName: "Jazz In Paris",
-        cover: "assets/4.jpg",
-        artist: "Media Right Productions"
+        path: "assets/music_1.mp3",
+        displayName: "Midnight Groove",
+        cover: "assets/img_1.avif",
+        artist: "Neon Drift"
     },
     {
-        path: "assets/5.mp3",
-        displayName: "Blue Skies",
-        cover: "assets/5.jpg",
-        artist: "Silent Partner"
+        path: "assets/music_2.mp3",
+        displayName: "City Nights",
+        cover: "assets/img_2.avif",
+        artist: "Echo Avenue"
     },
     {
-        path: "assets/6.mp3",
-        displayName: "Crimson Fly",
-        cover: "assets/6.jpg",
+        path: "assets/music_3.mp3",
+        displayName: "Mind Horizon",
+        cover: "assets/img_3.avif",
+        artist: "Nova Chase"
+    },
+    {
+        path: "assets/music_4.mp3",
+        displayName: "Paris Sunrise",
+        cover: "assets/img_4.avif",
+        artist: "Velvet Ensemble"
+    },
+    {
+        path: "assets/music_5.mp3",
+        displayName: "Skyline Dreams",
+        cover: "assets/img_5.avif",
+        artist: "Silver Motion"
+    },
+    {
+        path: "assets/music_6.mp3",
+        displayName: "Groovy Trap",
+        cover: "assets/img_6.avif",
         artist: "Huma-Huma"
-    }
+    },
+    {
+        path: "assets/music_7.mp3",
+        displayName: "Ocean Drive",
+        cover: "assets/img_7.avif",
+        artist: "Duke Dumont"
+    },
+    {
+        path: "assets/music_8.mp3",
+        displayName: "Nightfall",
+        cover: "assets/img_8.avif",
+        artist: "Neon Vibe"
+    },
+    {
+        path: "assets/music_9.mp3",
+        displayName: "Dreamscape",
+        cover: "assets/img_9.avif",
+        artist: "Aether Sounds"
+    },
+    {
+        path: "assets/music_10.mp3",
+        displayName: "SigmaMusicArt",
+        cover: "assets/img_10.avif",
+        artist: "Mikhail Smusev"
+    }  
 ];
 
 let musicIndex = 0;
