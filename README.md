@@ -2,6 +2,8 @@
 
 This project is a simple and stylish music player built using HTML, CSS, and JavaScript. It allows users to play, pause, and navigate through their favorite songs with ease.
 
+<img width="1917" height="938" alt="image" src="https://github.com/user-attachments/assets/ccafab5d-9c9c-49c1-9fc5-c2824975ff8f" />
+
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
@@ -37,3 +39,4 @@ Feel free to contribute to this project by submitting issues or pull requests. Y
 
 ## License
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
+
