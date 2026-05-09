@@ -21,11 +21,11 @@ This project is a simple and stylish music player built using HTML, CSS, and Jav
 ## Installation
 1. Clone the repository:
     ```bash
-    git clone https://github.com/abdul-rahman-0x/music-player.git
+    https://github.com/abdul-rahman-0x/Music-Player-App.git
     ```
 2. Navigate to the project directory:
     ```bash
-    cd music-player
+    cd Music-Player-App
     ```
 3. Open `index.html` in your preferred web browser.
 
