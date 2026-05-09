@@ -21,7 +21,7 @@ This project is a simple and stylish music player built using HTML, CSS, and Jav
 ## Installation
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/music-player.git
+    git clone https://github.com/abdul-rahman-0x/music-player.git
     ```
 2. Navigate to the project directory:
     ```bash
