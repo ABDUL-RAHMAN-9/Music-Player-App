@@ -189,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Audio Source Update
         audio.src = song.audio;
-        durationEl.textContent = song.duration;
         progressFill.style.width = "0%";
         currentTimeEl.textContent = "0:00";
 
