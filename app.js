@@ -145,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const volumeSlider = document.getElementById("volume-slider");
     const muteBtn = document.getElementById("mute-btn");
+    let previousVolume = parseFloat(volumeSlider.value);
 
     const searchInput = document.getElementById("search-input");
     const playlist = document.getElementById("playlist");
@@ -372,16 +373,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function toggleMute() {
-        if (audio.muted) {
-            audio.muted = false;
-            volumeSlider.value = audio.volume || 0.8;
-            updateVolumeFill();
+        if (audio.muted || audio.volume === 0) {
+            volumeSlider.value = previousVolume;
         } else {
-            audio.muted = true;
+            previousVolume = audio.volume;
             volumeSlider.value = 0;
-            updateVolumeFill();
-            muteBtn.className = "fa-solid fa-volume-xmark";
         }
+
+        updateVolumeFill();
     }
 
     function updateProgress() {
@@ -462,7 +461,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Volume Events
-        volumeSlider.addEventListener("input", updateVolumeFill);
+        volumeSlider.addEventListener("input", () => {
+            updateVolumeFill();
+
+            if (audio.volume > 0) {
+                previousVolume = audio.volume;
+            }
+        });
         muteBtn.addEventListener("click", toggleMute);
 
         // Instant Search
