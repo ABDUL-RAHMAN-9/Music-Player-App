@@ -55,7 +55,7 @@ body {
 
 body.drawer-open {
     overflow: hidden;
-    touch-action: none; /* Block horizontal/vertical swiping on background elements when queue drawer is active */
+    touch-action: none; /* Block swiping behind active queue drawer */
 }
 
 /* Dynamic Fading Backdrops */
@@ -70,6 +70,7 @@ body.drawer-open {
     opacity: 0;
     transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: none;
+    will-change: opacity;
 }
 
 .dynamic-bg.active {
@@ -99,6 +100,7 @@ body.drawer-open {
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--transition-smooth);
+    will-change: opacity;
 }
 
 .drawer-backdrop.active {
@@ -141,8 +143,9 @@ body.drawer-open {
     perspective: 1200px;
     transform-style: preserve-3d;
     cursor: grab;
-    touch-action: pan-y; /* Prevent default browser swiping/scrolling gestures on horizontal drags */
+    touch-action: pan-y; /* Prevent browser navigation swipe on horizontal drag */
     transition: transform 0.45s var(--ease-out);
+    will-change: transform;
 }
 
 /* Global Drag state cursor states */
@@ -170,6 +173,7 @@ body.dragging * {
         visibility 0.5s ease;
     transform-style: preserve-3d;
     backface-visibility: hidden;
+    will-change: transform, opacity;
 }
 
 .carousel-card img {
@@ -178,10 +182,6 @@ body.dragging * {
     object-fit: cover;
     transition: transform 0.6s ease;
     pointer-events: none;
-}
-
-.carousel-card.active-card:hover img {
-    transform: scale(1.04);
 }
 
 /* Glass Card Metal Overlay */
@@ -238,7 +238,7 @@ body.dragging * {
     opacity: 0;
     pointer-events: none;
     z-index: 0;
-    visibility: hidden; /* Fully exclude hidden layers from rendering and peaking */
+    visibility: hidden;
 }
 
 .carousel-card.pos-far-prev {
@@ -248,7 +248,7 @@ body.dragging * {
     pointer-events: auto;
     z-index: 2;
     visibility: visible;
-    filter: blur(2px) brightness(0.65); /* Fade borders out cleanly to keep focus centered */
+    filter: blur(2px) brightness(0.65);
 }
 
 .carousel-card.pos-prev {
@@ -287,7 +287,7 @@ body.dragging * {
     pointer-events: auto;
     z-index: 2;
     visibility: visible;
-    filter: blur(2px) brightness(0.65); /* Fade borders out cleanly to keep focus centered */
+    filter: blur(2px) brightness(0.65);
 }
 
 /* Floating Apple-Style Glass Control Capsule */
@@ -313,6 +313,7 @@ body.dragging * {
     padding: 0 28px;
     z-index: 150;
     transition: var(--transition-smooth);
+    will-change: transform;
 }
 
 .capsule-controls-left,
@@ -327,7 +328,7 @@ body.dragging * {
     border: none;
     color: rgba(255, 255, 255, 0.65);
     cursor: pointer;
-    width: 44px; /* Optimal, clickable targets */
+    width: 44px;
     height: 44px;
     border-radius: 50%;
     display: flex;
@@ -335,12 +336,6 @@ body.dragging * {
     justify-content: center;
     font-size: 15px;
     transition: var(--transition-smooth);
-}
-
-.capsule-btn:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.08);
-    transform: scale(1.05);
 }
 
 .capsule-btn:active {
@@ -418,7 +413,7 @@ body.dragging * {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 12px; /* Taller hover bounds for seek accuracy */
+    height: 12px;
     cursor: pointer;
     display: flex;
     align-items: flex-end;
@@ -430,10 +425,6 @@ body.dragging * {
     height: 3px;
     background: rgba(255, 255, 255, 0.15);
     transition: height 0.15s ease;
-}
-
-.mini-progress-area:hover .mini-progress-track {
-    height: 5px;
 }
 
 .mini-progress-fill {
@@ -457,12 +448,6 @@ body.dragging * {
     align-items: center;
 }
 
-.volume-controller:hover .volume-slider-wrapper,
-.volume-controller:focus-within .volume-slider-wrapper {
-    width: 85px;
-    margin-right: 6px;
-}
-
 .volume-slider-wrapper input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -484,11 +469,11 @@ body.dragging * {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Sliding Frosted Side Panel Drawer */
+/* Sliding Frosted Side Panel Drawer (GPU-Optimized) */
 .queue-drawer {
     position: fixed;
     top: 24px;
-    right: -360px;
+    right: 24px; /* Anchor layout position */
     width: 340px;
     height: calc(100vh - 48px);
     background: rgba(10, 10, 15, 0.65);
@@ -498,14 +483,18 @@ body.dragging * {
     border-radius: var(--radius-panel);
     box-shadow: -15px 0 45px rgba(0, 0, 0, 0.6);
     z-index: 250;
-    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     padding: 24px;
     display: flex;
     flex-direction: column;
+
+    /* Hardware Accelerated transforms instead of left/right offsets */
+    transform: translateX(calc(100% + 40px));
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
 }
 
 .queue-drawer.open {
-    right: 24px;
+    transform: translateX(0);
 }
 
 .drawer-header {
@@ -542,7 +531,7 @@ body.dragging * {
     border: none;
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    width: 44px; /* Optimal clickable targets */
+    width: 44px;
     height: 44px;
     border-radius: 50%;
     display: flex;
@@ -550,11 +539,6 @@ body.dragging * {
     justify-content: center;
     font-size: 14px;
     transition: var(--transition-smooth);
-}
-
-.btn-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
 }
 
 .drawer-playlist {
@@ -580,11 +564,6 @@ body.dragging * {
     cursor: pointer;
     transition: var(--transition-smooth);
     border: 1px solid transparent;
-}
-
-.song-row:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.05);
 }
 
 .song-row.active {
@@ -627,6 +606,39 @@ body.dragging * {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
     font-variant-numeric: tabular-nums;
+}
+
+/* Mouse Hover Actions (Isolated from Touch Elements) */
+@media (hover: hover) {
+    .capsule-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+        transform: scale(1.05);
+    }
+
+    .carousel-card.active-card:hover img {
+        transform: scale(1.04);
+    }
+
+    .mini-progress-area:hover .mini-progress-track {
+        height: 5px;
+    }
+
+    .volume-controller:hover .volume-slider-wrapper,
+    .volume-controller:focus-within .volume-slider-wrapper {
+        width: 85px;
+        margin-right: 6px;
+    }
+
+    .btn-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .song-row:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
 }
 
 /* Responsive Adaptive Spacing & Layout overrides */
@@ -702,18 +714,19 @@ body.dragging * {
         display: none; /* Auto-simplify capsule right on narrow screens */
     }
 
-    /* Transform Sidebar Drawer into a proper mobile Overlay Bottom Sheet with safe margins */
+    /* Transform Sidebar Drawer into Mobile Overlay Bottom Sheet */
     .queue-drawer {
         top: 12px;
-        right: -100%;
+        right: 12px;
         width: calc(100% - 24px);
         height: calc(100vh - 24px);
         border-radius: var(--radius-panel);
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
-        z-index: 300; /* Layer on top of control capsule */
+        z-index: 300;
+        transform: translateX(calc(100% + 24px));
     }
     .queue-drawer.open {
-        right: 12px;
+        transform: translateX(0);
     }
 }
 
@@ -767,4 +780,22 @@ body.dragging * {
     .carousel-section {
         height: 230px;
     }
+}
+
+/* Disable text selection across the entire carousel area */
+.carousel-section,
+.carousel-track,
+.carousel-card,
+.card-meta,
+.card-title,
+.card-artist {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    user-select: none; /* Standard */
+}
+
+/* Prevent native browser ghost-dragging of cover images */
+.carousel-card img {
+    -webkit-user-drag: none; /* Supported in Safari, Chrome, and Edge */
+    pointer-events: none; /* Disables mouse trigger paths */
 }
