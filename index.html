@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Music Player | Modern Web Audio Experience</title>
+        <title>Music Player | Spatial Audio Experience</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -15,89 +15,85 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <!-- Dynamic Immersive Background -->
-        <div id="dynamic-bg" class="dynamic-bg"></div>
+        <!-- Dual cross-fading dynamic backdrops -->
+        <div id="bg-fade-1" class="dynamic-bg"></div>
+        <div id="bg-fade-2" class="dynamic-bg"></div>
+        <div class="bg-vignette"></div>
 
-        <div class="app-container">
-            <!-- --- TOP SEARCH BAR --- -->
-            <header class="app-header">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input
-                        type="text"
-                        id="search-input"
-                        placeholder="Search songs or artists" />
+        <div class="app-viewport">
+            <!-- Spatial 3D Album-Art Carousel Stage -->
+            <section class="carousel-section">
+                <div class="carousel-track" id="carousel-track">
+                    <!-- Cards dynamically injected via JS -->
                 </div>
-                <div id="player-status" class="status-indicator">
-                    <span class="pulse"></span>
-                    <span id="status-text">Ready</span>
-                </div>
-            </header>
+            </section>
 
-            <main class="main-content">
-                <!-- --- LEFT: NOW PLAYING STAGE --- -->
-                <section class="now-playing-section">
-                    <div class="artwork-wrapper">
-                        <img
-                            src=""
-                            id="cover"
-                            alt="Album Cover"
-                            class="main-artwork" />
+            <!-- Floating Control Capsule -->
+            <footer class="control-capsule">
+                <!-- Playback Group -->
+                <div class="capsule-controls-left">
+                    <button id="prev" class="capsule-btn" title="Previous Song">
+                        <i class="fa-solid fa-backward-step"></i>
+                    </button>
+                    <button id="play" class="capsule-btn btn-play" title="Play">
+                        <i class="fa-solid fa-play" id="play-icon"></i>
+                    </button>
+                    <button id="next" class="capsule-btn" title="Next Song">
+                        <i class="fa-solid fa-forward-step"></i>
+                    </button>
+                </div>
+
+                <!-- Integrated Embedded Mini Player Display -->
+                <div class="mini-player-display">
+                    <img
+                        id="mini-cover"
+                        src=""
+                        alt="Thumbnail"
+                        class="mini-cover" />
+                    <div class="mini-meta">
+                        <span id="mini-title" class="mini-title"
+                            >Select a Track</span
+                        >
+                        <span id="mini-artist" class="mini-artist">Artist</span>
                     </div>
 
-                    <div class="track-meta">
-                        <div class="primary-meta">
-                            <h1 id="music-title">Select a track</h1>
-                            <h2 id="music-artist">Artist Name</h2>
-                        </div>
-                        <div class="secondary-meta">
-                            <span id="music-album">Album</span> •
-                            <span id="music-genre">Genre</span> •
-                            <span id="music-year">Year</span>
-                        </div>
+                    <div class="mini-time-info">
+                        <span id="current-time">0:00</span>
+                        <span style="opacity: 0.4">/</span>
+                        <span id="duration">0:00</span>
                     </div>
 
-                    <!-- Playback Interface -->
-                    <div class="playback-interface">
-                        <div class="progress-area">
-                            <div class="time-stamps">
-                                <span id="current-time">0:00</span>
-                                <span id="duration">0:00</span>
-                            </div>
-                            <div
-                                class="progress-bar-container"
-                                id="player-progress">
-                                <div class="progress-bg">
-                                    <div
-                                        class="progress-fill"
-                                        id="progress"></div>
-                                </div>
-                            </div>
+                    <!-- Progress seek wrapper with safe taller touch height -->
+                    <div class="mini-progress-area" id="progress-container">
+                        <div class="mini-progress-track">
+                            <div class="mini-progress-fill" id="progress"></div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="player-controls">
-                            <button
-                                id="shuffle"
-                                class="btn-icon"
-                                title="Shuffle">
-                                <i class="fa-solid fa-shuffle"></i>
-                            </button>
-                            <button id="prev" class="btn-icon btn-lg">
-                                <i class="fa-solid fa-backward-step"></i>
-                            </button>
-                            <button id="play" class="btn-play">
-                                <i class="fa-solid fa-play" id="play-icon"></i>
-                            </button>
-                            <button id="next" class="btn-icon btn-lg">
-                                <i class="fa-solid fa-forward-step"></i>
-                            </button>
-                            <button id="repeat" class="btn-icon" title="Repeat">
-                                <i class="fa-solid fa-repeat"></i>
-                            </button>
-                        </div>
+                <!-- Utility Group -->
+                <div class="capsule-controls-right">
+                    <button id="shuffle" class="capsule-btn" title="Shuffle">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </button>
+                    <button id="repeat" class="capsule-btn" title="Repeat">
+                        <i class="fa-solid fa-repeat"></i>
+                    </button>
+                    <button
+                        id="queue-btn"
+                        class="capsule-btn"
+                        title="Playing Next">
+                        <i class="fa-solid fa-list-ul"></i>
+                    </button>
 
-                        <div class="volume-stack">
-                            <i class="fa-solid fa-volume-low" id="mute-btn"></i>
+                    <!-- Expandable micro-volume slider -->
+                    <div class="volume-controller">
+                        <button id="mute-btn" class="capsule-btn" title="Mute">
+                            <i
+                                class="fa-solid fa-volume-high"
+                                id="mute-icon"></i>
+                        </button>
+                        <div class="volume-slider-wrapper">
                             <input
                                 type="range"
                                 id="volume-slider"
@@ -107,19 +103,24 @@
                                 value="0.8" />
                         </div>
                     </div>
-                </section>
+                </div>
+            </footer>
 
-                <!-- --- RIGHT: QUEUE & DISCOVERY --- -->
-                <section class="queue-section">
-                    <div class="section-header">
+            <!-- "Playing Next" Frosted Drawer -->
+            <div id="queue-drawer" class="queue-drawer">
+                <div class="drawer-header">
+                    <div class="drawer-title-group">
                         <h3>Playing Next</h3>
-                        <span id="queue-count" class="badge">0 Songs</span>
+                        <span id="queue-count" class="badge">20 Songs</span>
                     </div>
-                    <div id="playlist" class="custom-scrollbar">
-                        <!-- Dynamic Rows Injected via JS -->
-                    </div>
-                </section>
-            </main>
+                    <button id="close-drawer" class="btn-close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div id="playlist" class="drawer-playlist custom-scrollbar">
+                    <!-- Cards dynamically loaded in via JS -->
+                </div>
+            </div>
         </div>
 
         <audio id="audio-player"></audio>
