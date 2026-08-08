@@ -55,7 +55,7 @@ body {
 
 body.drawer-open {
     overflow: hidden;
-    touch-action: none; /* Block viewport swipe behaviors when mobile queue sheet is active */
+    touch-action: none; /* Block horizontal/vertical swiping on background elements when queue drawer is active */
 }
 
 /* Dynamic Fading Backdrops */
@@ -86,6 +86,24 @@ body.drawer-open {
     );
     z-index: -1;
     pointer-events: none;
+}
+
+/* Responsive Backdrop Overlay */
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 240;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-smooth);
+}
+
+.drawer-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 /* Main Viewport Grid */
@@ -123,10 +141,11 @@ body.drawer-open {
     perspective: 1200px;
     transform-style: preserve-3d;
     cursor: grab;
-    transition: transform 0.4s var(--ease-out);
+    touch-action: pan-y; /* Prevent default browser swiping/scrolling gestures on horizontal drags */
+    transition: transform 0.45s var(--ease-out);
 }
 
-/* Viewport Global Drag cursor overrides */
+/* Global Drag state cursor states */
 body.dragging,
 body.dragging * {
     cursor: grabbing !important;
@@ -219,7 +238,7 @@ body.dragging * {
     opacity: 0;
     pointer-events: none;
     z-index: 0;
-    visibility: hidden; /* Fully exclude hidden layers from peering */
+    visibility: hidden; /* Fully exclude hidden layers from rendering and peaking */
 }
 
 .carousel-card.pos-far-prev {
@@ -229,6 +248,7 @@ body.dragging * {
     pointer-events: auto;
     z-index: 2;
     visibility: visible;
+    filter: blur(2px) brightness(0.65); /* Fade borders out cleanly to keep focus centered */
 }
 
 .carousel-card.pos-prev {
@@ -267,9 +287,10 @@ body.dragging * {
     pointer-events: auto;
     z-index: 2;
     visibility: visible;
+    filter: blur(2px) brightness(0.65); /* Fade borders out cleanly to keep focus centered */
 }
 
-/* Premium Floating Capsule Control Pill */
+/* Floating Apple-Style Glass Control Capsule */
 .control-capsule {
     position: fixed;
     bottom: 40px;
@@ -306,7 +327,7 @@ body.dragging * {
     border: none;
     color: rgba(255, 255, 255, 0.65);
     cursor: pointer;
-    width: 44px; /* Ensure optimal touch index targets */
+    width: 44px; /* Optimal, clickable targets */
     height: 44px;
     border-radius: 50%;
     display: flex;
@@ -331,7 +352,7 @@ body.dragging * {
     background: rgba(0, 113, 227, 0.15);
 }
 
-/* Embedded Mini display inside pill */
+/* Capsule Integrated Mini Display */
 .mini-player-display {
     flex: 1;
     max-width: 320px;
@@ -391,13 +412,13 @@ body.dragging * {
     gap: 3px;
 }
 
-/* Precise Progress Seek Area & Overlays */
+/* Precise Progress Seek Area */
 .mini-progress-area {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 12px; /* Large, responsive hitbox overlay */
+    height: 12px; /* Taller hover bounds for seek accuracy */
     cursor: pointer;
     display: flex;
     align-items: flex-end;
@@ -421,7 +442,7 @@ body.dragging * {
     width: 0%;
 }
 
-/* Sliding Volume Controller wrapper */
+/* Sliding Volume Controller */
 .volume-controller {
     display: flex;
     align-items: center;
@@ -521,7 +542,7 @@ body.dragging * {
     border: none;
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    width: 44px; /* Optimal comfortable touch targets */
+    width: 44px; /* Optimal clickable targets */
     height: 44px;
     border-radius: 50%;
     display: flex;
@@ -608,7 +629,7 @@ body.dragging * {
     font-variant-numeric: tabular-nums;
 }
 
-/* Responsive Adaptive Sizing & Layout overrides */
+/* Responsive Adaptive Spacing & Layout overrides */
 @media (max-width: 900px) {
     :root {
         --card-width: 250px;
@@ -637,7 +658,7 @@ body.dragging * {
         gap: 12px;
     }
     .volume-controller {
-        display: none; /* Auto-simplify on medium viewports */
+        display: none; /* Hide volume expander on medium viewports */
     }
 }
 
@@ -675,10 +696,10 @@ body.dragging * {
         height: 30px;
     }
     .mini-time-info {
-        display: none; /* Hide timeline metadata on compact mobile viewports */
+        display: none; /* Hide timeline metrics on compact mobile viewports */
     }
     .capsule-controls-right button:not(#queue-btn) {
-        display: none; /* Simplify completely for core control priorities */
+        display: none; /* Auto-simplify capsule right on narrow screens */
     }
 
     /* Transform Sidebar Drawer into a proper mobile Overlay Bottom Sheet with safe margins */
@@ -689,21 +710,61 @@ body.dragging * {
         height: calc(100vh - 24px);
         border-radius: var(--radius-panel);
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
-        z-index: 300; /* Fully overlay over control elements */
+        z-index: 300; /* Layer on top of control capsule */
     }
     .queue-drawer.open {
         right: 12px;
     }
 }
 
-@media (max-width: 400px) {
+/* Sizing configurations for small screens down to 320px */
+@media (max-width: 480px) {
     :root {
-        --card-width: 185px;
-        --card-height: 250px;
+        --card-width: 180px;
+        --card-height: 240px;
         --card-offset-1: 65px;
-        --card-offset-2: 125px;
+        --card-offset-2: 120px;
     }
     .carousel-section {
-        height: 290px;
+        height: 280px;
+    }
+    .control-capsule {
+        height: 64px;
+        bottom: 12px;
+        width: calc(100% - 16px);
+        padding: 0 8px;
+    }
+    .mini-player-display {
+        margin: 0 4px;
+        padding: 0 6px;
+        height: 44px;
+    }
+    .mini-cover {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+    }
+    .mini-title {
+        font-size: 11px;
+    }
+    .mini-artist {
+        font-size: 9.5px;
+    }
+    .capsule-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 360px) {
+    :root {
+        --card-width: 150px;
+        --card-height: 200px;
+        --card-offset-1: 50px;
+        --card-offset-2: 95px;
+    }
+    .carousel-section {
+        height: 230px;
     }
 }
