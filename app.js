@@ -230,6 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let isRepeat = false;
     let isSeeking = false;
     let filteredSongs = [...songs];
+    let currentBgIndex = 1;
 
     // --- 3. DOM Elements ---
     const audio = document.getElementById("audio-player");
@@ -240,70 +241,186 @@ document.addEventListener("DOMContentLoaded", () => {
     const shuffleBtn = document.getElementById("shuffle");
     const repeatBtn = document.getElementById("repeat");
 
-    const cover = document.getElementById("cover");
-    const dynamicBg = document.getElementById("dynamic-bg");
-    const titleEl = document.getElementById("music-title");
-    const artistEl = document.getElementById("music-artist");
-    const albumEl = document.getElementById("music-album");
-    const genreEl = document.getElementById("music-genre");
-    const yearEl = document.getElementById("music-year");
+    const trackTrack = document.getElementById("carousel-track");
+    const miniCover = document.getElementById("mini-cover");
+    const miniTitle = document.getElementById("mini-title");
+    const miniArtist = document.getElementById("mini-artist");
 
     const currentTimeEl = document.getElementById("current-time");
     const durationEl = document.getElementById("duration");
-    const progressContainer = document.getElementById("player-progress");
+    const progressContainer = document.getElementById("progress-container");
     const progressFill = document.getElementById("progress");
 
     const volumeSlider = document.getElementById("volume-slider");
     const muteBtn = document.getElementById("mute-btn");
+    const muteIcon = document.getElementById("mute-icon");
     let previousVolume = parseFloat(volumeSlider.value);
 
-    const searchInput = document.getElementById("search-input");
     const playlist = document.getElementById("playlist");
     const queueCount = document.getElementById("queue-count");
-    const statusText = document.getElementById("status-text");
 
-    // --- 4. Initialization & Setup ---
+    // Drawers Elements
+    const queueBtn = document.getElementById("queue-btn");
+    const queueDrawer = document.getElementById("queue-drawer");
+    const closeDrawerBtn = document.getElementById("close-drawer");
+
+    // --- 4. Initialization ---
     function init() {
         audio.volume = parseFloat(volumeSlider.value);
         updateVolumeFill();
+        renderCarousel();
         loadTrack(currentIndex, false);
         renderPlaylist(filteredSongs);
         setupEventListeners();
+        setupDragAndSwipe();
     }
 
-    // --- 5. Track Management & UI Synchronization ---
+    // --- 5. Dynamic 3D Carousel Generator ---
+    function renderCarousel() {
+        trackTrack.innerHTML = "";
+        songs.forEach((song, idx) => {
+            const card = document.createElement("div");
+            card.className = "carousel-card";
+            card.setAttribute("data-id", song.id);
+            card.innerHTML = `
+                <img src="${song.cover}" alt="${song.title}" />
+                <div class="card-meta">
+                    <div class="card-title">${song.title}</div>
+                    <div class="card-artist">${song.artist}</div>
+                </div>
+            `;
+
+            card.addEventListener("click", () => {
+                if (idx !== currentIndex) {
+                    loadTrack(idx, true);
+                } else {
+                    togglePlay();
+                }
+            });
+
+            trackTrack.appendChild(card);
+        });
+    }
+
+    function updateCarouselPositions() {
+        const cards = document.querySelectorAll(".carousel-card");
+        const N = songs.length;
+
+        cards.forEach((card, idx) => {
+            card.className = "carousel-card";
+
+            let offset = idx - currentIndex;
+            if (offset < -N / 2) offset += N;
+            if (offset > N / 2) offset -= N;
+
+            if (offset === 0) {
+                card.classList.add("pos-active", "active-card");
+            } else if (offset === 1) {
+                card.classList.add("pos-next");
+            } else if (offset === -1) {
+                card.classList.add("pos-prev");
+            } else if (offset === 2) {
+                card.classList.add("pos-far-next");
+            } else if (offset === -2) {
+                card.classList.add("pos-far-prev");
+            } else {
+                card.classList.add("pos-hidden");
+            }
+        });
+    }
+
+    // --- 6. Hardware-Accelerated Swipe/Drag Engine ---
+    function setupDragAndSwipe() {
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        const dragThreshold = 50; // pixels to swap track
+
+        trackTrack.addEventListener("pointerdown", (e) => {
+            if (e.button !== 0 && e.pointerType === "mouse") return;
+            isDragging = true;
+            startX = e.clientX;
+            currentX = e.clientX;
+            trackTrack.setPointerCapture(e.pointerId);
+            document.body.classList.add("dragging");
+        });
+
+        trackTrack.addEventListener("pointermove", (e) => {
+            if (!isDragging) return;
+            currentX = e.clientX;
+
+            // hardware-accelerated micro shift to provide immediate response
+            const deltaX = currentX - startX;
+            const rotationY = Math.max(-14, Math.min(14, deltaX * 0.05));
+            trackTrack.style.transform = `rotateY(${rotationY}deg)`;
+            trackTrack.style.transition = "none";
+        });
+
+        trackTrack.addEventListener("pointerup", (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            trackTrack.releasePointerCapture(e.pointerId);
+            document.body.classList.remove("dragging");
+
+            trackTrack.style.transform = "";
+            trackTrack.style.transition = "transform 0.45s var(--ease-out)";
+
+            const deltaX = currentX - startX;
+            if (Math.abs(deltaX) > dragThreshold) {
+                if (deltaX > 0) {
+                    prevTrack();
+                } else {
+                    nextTrack();
+                }
+            }
+        });
+
+        trackTrack.addEventListener("pointercancel", () => {
+            if (!isDragging) return;
+            isDragging = false;
+            document.body.classList.remove("dragging");
+            trackTrack.style.transform = "";
+            trackTrack.style.transition = "transform 0.45s var(--ease-out)";
+        });
+    }
+
+    // --- 7. Fading Color Atmospheric Backdrops ---
+    function updateDynamicBackground(coverUrl) {
+        const bg1 = document.getElementById("bg-fade-1");
+        const bg2 = document.getElementById("bg-fade-2");
+        if (!bg1 || !bg2) return;
+
+        if (currentBgIndex === 1) {
+            bg2.style.backgroundImage = `url(${coverUrl})`;
+            bg2.classList.add("active");
+            bg1.classList.remove("active");
+            currentBgIndex = 2;
+        } else {
+            bg1.style.backgroundImage = `url(${coverUrl})`;
+            bg1.classList.add("active");
+            bg2.classList.remove("active");
+            currentBgIndex = 1;
+        }
+    }
+
+    // --- 8. Track Controls & Immediate States (Optimistic UI) ---
     function loadTrack(index, autoPlay = true) {
         if (index < 0 || index >= songs.length) return;
 
         currentIndex = index;
         const song = songs[currentIndex];
 
-        // Metadata Updates
-        titleEl.textContent = song.title;
-        artistEl.textContent = song.artist;
-        if (albumEl) albumEl.textContent = song.album;
-        if (genreEl) genreEl.textContent = song.genre;
-        if (yearEl) yearEl.textContent = song.year;
+        // Sync Metadata Display immediately
+        if (miniTitle) miniTitle.textContent = song.title;
+        if (miniArtist) miniArtist.textContent = song.artist;
+        if (miniCover) miniCover.src = song.cover;
 
-        // Artwork & Dynamic Background Fade Effect
-        cover.style.opacity = "0.4";
-        cover.style.transform = "scale(0.96)";
+        updateDynamicBackground(song.cover);
 
-        setTimeout(() => {
-            cover.src = song.cover;
-            if (dynamicBg) {
-                dynamicBg.style.backgroundImage = `url(${song.cover})`;
-            }
-            cover.style.opacity = "1";
-            cover.style.transform = "scale(1)";
-        }, 150);
-
-        // Audio Source Update
+        // Reset Source & Timelines
         audio.src = song.audio;
         progressFill.style.width = "0%";
         currentTimeEl.textContent = "0:00";
-
-        setStatus("Ready");
 
         if (autoPlay) {
             playTrack();
@@ -311,26 +428,33 @@ document.addEventListener("DOMContentLoaded", () => {
             pauseTrack();
         }
 
-        renderPlaylist(filteredSongs);
+        updateCarouselPositions();
+        updateActivePlaylistState();
         scrollPlaylistToActive();
     }
 
     function playTrack() {
+        // Optimistic State rendering to avoid engine delays
+        isPlaying = true;
+        playIcon.className = "fa-solid fa-pause";
+        playBtn.classList.add("playing");
+        playBtn.title = "Pause";
+        updateActivePlaylistState();
+
         const playPromise = audio.play();
         if (playPromise !== undefined) {
             playPromise
                 .then(() => {
-                    isPlaying = true;
-                    playIcon.className = "fa-solid fa-pause";
-                    playBtn.classList.add("playing");
-                    playBtn.title = "Pause";
-                    setStatus("Playing");
-                    updateActivePlaylistState();
+                    // Handled optimistically
                 })
                 .catch((err) => {
-                    console.warn("Playback error or interrupted:", err);
+                    console.warn("Playback interrupted:", err);
+                    // Rollback if play is blocked or fails
                     isPlaying = false;
-                    setStatus("Ready");
+                    playIcon.className = "fa-solid fa-play";
+                    playBtn.classList.remove("playing");
+                    playBtn.title = "Play";
+                    updateActivePlaylistState();
                 });
         }
     }
@@ -341,7 +465,6 @@ document.addEventListener("DOMContentLoaded", () => {
         playIcon.className = "fa-solid fa-play";
         playBtn.classList.remove("playing");
         playBtn.title = "Play";
-        setStatus("Paused");
         updateActivePlaylistState();
     }
 
@@ -375,25 +498,12 @@ document.addEventListener("DOMContentLoaded", () => {
         loadTrack(prevIndex, true);
     }
 
-    function setStatus(text) {
-        if (statusText) statusText.textContent = text;
-    }
-
-    // --- 6. Playlist & Search Engine ---
+    // --- 9. Playlist Queue Display Engine ---
     function renderPlaylist(list) {
         playlist.innerHTML = "";
 
         if (queueCount) {
             queueCount.textContent = `${list.length} ${list.length === 1 ? "Song" : "Songs"}`;
-        }
-
-        if (list.length === 0) {
-            playlist.innerHTML = `
-                <div style="text-align:center; padding: 24px 0; color: var(--text-muted); font-size: 13px;">
-                    No tracks match your search
-                </div>
-            `;
-            return;
         }
 
         list.forEach((s) => {
@@ -408,24 +518,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     <h4>${escapeHtml(s.title)}</h4>
                     <p>${escapeHtml(s.artist)}</p>
                 </div>
-                ${
-                    isActive && isPlaying
-                        ? `<div class="playing-bars">
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                           </div>`
-                        : `<span class="song-duration">${s.duration}</span>`
-                }
+                <span class="song-duration">${s.duration}</span>
             `;
 
             row.addEventListener("click", () => {
                 const targetIndex = songs.findIndex((item) => item.id === s.id);
                 if (targetIndex !== -1) {
-                    if (targetIndex === currentIndex && isPlaying) {
-                        pauseTrack();
-                    } else if (targetIndex === currentIndex && !isPlaying) {
-                        playTrack();
+                    if (targetIndex === currentIndex) {
+                        togglePlay();
                     } else {
                         loadTrack(targetIndex, true);
                     }
@@ -437,7 +537,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateActivePlaylistState() {
-        renderPlaylist(filteredSongs);
+        const rows = playlist.querySelectorAll(".song-row");
+        rows.forEach((row) => {
+            const rowId = parseInt(row.getAttribute("data-id"));
+            if (rowId === songs[currentIndex].id) {
+                row.classList.add("active");
+            } else {
+                row.classList.remove("active");
+            }
+        });
     }
 
     function scrollPlaylistToActive() {
@@ -449,36 +557,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     block: "nearest",
                 });
             }
-        }, 100);
+        }, 120);
     }
 
-    function handleSearch(query) {
-        const cleanQuery = query.toLowerCase().trim();
-        filteredSongs = songs.filter(
-            (s) =>
-                s.title.toLowerCase().includes(cleanQuery) ||
-                s.artist.toLowerCase().includes(cleanQuery) ||
-                s.album.toLowerCase().includes(cleanQuery),
-        );
-        renderPlaylist(filteredSongs);
-    }
-
-    // --- 7. Dynamic Volume Fill & Audio Events ---
+    // --- 10. Volume Engine ---
     function updateVolumeFill() {
         const val = parseFloat(volumeSlider.value);
         audio.volume = val;
         audio.muted = val === 0;
 
-        // Dynamic linear gradient fill for volume slider
         const pct = val * 100;
-        volumeSlider.style.background = `linear-gradient(to right, var(--accent) ${pct}%, rgba(255, 255, 255, 0.15) ${pct}%)`;
+        volumeSlider.style.background = `linear-gradient(to right, var(--accent-blue) ${pct}%, rgba(255, 255, 255, 0.2) ${pct}%)`;
 
         if (val === 0) {
-            muteBtn.className = "fa-solid fa-volume-xmark";
+            muteIcon.className = "fa-solid fa-volume-xmark";
         } else if (val < 0.5) {
-            muteBtn.className = "fa-solid fa-volume-low";
+            muteIcon.className = "fa-solid fa-volume-low";
         } else {
-            muteBtn.className = "fa-solid fa-volume-high";
+            muteIcon.className = "fa-solid fa-volume-high";
         }
     }
 
@@ -489,10 +585,10 @@ document.addEventListener("DOMContentLoaded", () => {
             previousVolume = audio.volume;
             volumeSlider.value = 0;
         }
-
         updateVolumeFill();
     }
 
+    // --- 11. Timeline Tracking & Seeking Events ---
     function updateProgress() {
         if (isSeeking) return;
 
@@ -511,20 +607,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const percent = clickX / rect.width;
         progressFill.style.width = `${percent * 100}%`;
 
-        if (!isNaN(audio.duration)) {
+        if (!isNaN(audio.duration) && audio.duration > 0) {
             audio.currentTime = percent * audio.duration;
             currentTimeEl.textContent = formatTime(audio.currentTime);
         }
     }
 
-    // --- 8. Event Listener Registrations ---
+    // --- 12. Setup Handlers ---
     function setupEventListeners() {
-        // Playback Controls
+        // Playback Buttons
         playBtn.addEventListener("click", togglePlay);
         nextBtn.addEventListener("click", nextTrack);
         prevBtn.addEventListener("click", prevTrack);
 
-        // Shuffle & Repeat
         shuffleBtn.addEventListener("click", () => {
             isShuffle = !isShuffle;
             shuffleBtn.classList.toggle("active", isShuffle);
@@ -535,6 +630,30 @@ document.addEventListener("DOMContentLoaded", () => {
             isRepeat = !isRepeat;
             repeatBtn.classList.toggle("active", isRepeat);
             repeatBtn.title = isRepeat ? "Repeat Single On" : "Repeat Off";
+        });
+
+        // Toggle Drawer Sheets
+        queueBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isOpen = queueDrawer.classList.toggle("open");
+            if (isOpen) {
+                document.body.classList.add("drawer-open");
+            } else {
+                document.body.classList.remove("drawer-open");
+            }
+        });
+
+        closeDrawerBtn.addEventListener("click", () => {
+            queueDrawer.classList.remove("open");
+            document.body.classList.remove("drawer-open");
+        });
+
+        // Hide Side Drawer on Backdrop Click
+        document.addEventListener("click", (e) => {
+            if (!queueDrawer.contains(e.target) && e.target !== queueBtn) {
+                queueDrawer.classList.remove("open");
+                document.body.classList.remove("drawer-open");
+            }
         });
 
         // Audio Events
@@ -549,46 +668,40 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        audio.addEventListener("error", (e) => {
-            console.error("Audio Load Error:", e);
-            setStatus("Playback Error");
-        });
-
-        // Dragging & Seeking
-        progressContainer.addEventListener("mousedown", (e) => {
+        // Dragging & Seeking Events (Pointer unified)
+        progressContainer.addEventListener("pointerdown", (e) => {
             isSeeking = true;
             seekProgress(e);
+            progressContainer.setPointerCapture(e.pointerId);
 
-            const onMouseMove = (moveEvent) => seekProgress(moveEvent);
-            const onMouseUp = () => {
+            const onPointerMove = (moveEvent) => {
+                if (isSeeking) seekProgress(moveEvent);
+            };
+            const onPointerUp = () => {
                 isSeeking = false;
-                document.removeEventListener("mousemove", onMouseMove);
-                document.removeEventListener("mouseup", onMouseUp);
+                progressContainer.releasePointerCapture(e.pointerId);
+                progressContainer.removeEventListener(
+                    "pointermove",
+                    onPointerMove,
+                );
+                progressContainer.removeEventListener("pointerup", onPointerUp);
             };
 
-            document.addEventListener("mousemove", onMouseMove);
-            document.addEventListener("mouseup", onMouseUp);
+            progressContainer.addEventListener("pointermove", onPointerMove);
+            progressContainer.addEventListener("pointerup", onPointerUp);
         });
 
-        // Volume Events
+        // Volume Interaction Slides
         volumeSlider.addEventListener("input", () => {
             updateVolumeFill();
-
             if (audio.volume > 0) {
                 previousVolume = audio.volume;
             }
         });
         muteBtn.addEventListener("click", toggleMute);
 
-        // Instant Search
-        searchInput.addEventListener("input", (e) => {
-            handleSearch(e.target.value);
-        });
-
-        // Key Shortcuts
+        // Key shortcuts
         window.addEventListener("keydown", (e) => {
-            if (document.activeElement === searchInput) return;
-
             if (e.code === "Space") {
                 e.preventDefault();
                 togglePlay();
@@ -602,7 +715,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 9. Helpers ---
+    // --- 13. Helpers ---
     function formatTime(seconds) {
         if (isNaN(seconds) || seconds < 0) return "0:00";
         const mins = Math.floor(seconds / 60);
@@ -619,6 +732,5 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/'/g, "&#039;");
     }
 
-    // Launch App
     init();
 });
