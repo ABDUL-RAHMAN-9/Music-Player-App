@@ -283,8 +283,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const card = document.createElement("div");
             card.className = "carousel-card";
             card.setAttribute("data-id", song.id);
+            // Added draggable="false" to avoid default browser image ghost dragging
             card.innerHTML = `
-                <img src="${song.cover}" alt="${song.title}" />
+                <img src="${song.cover}" alt="${song.title}" draggable="false" />
                 <div class="card-meta">
                     <div class="card-title">${song.title}</div>
                     <div class="card-artist">${song.artist}</div>
@@ -336,6 +337,11 @@ document.addEventListener("DOMContentLoaded", () => {
         let startX = 0;
         let currentX = 0;
         const dragThreshold = 55; // pixels to swap track
+
+        // Block native browser file drag drop overlays
+        trackTrack.addEventListener("dragstart", (e) => {
+            e.preventDefault();
+        });
 
         trackTrack.addEventListener("pointerdown", (e) => {
             if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -513,7 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.setAttribute("data-id", s.id);
 
             row.innerHTML = `
-                <img src="${s.cover}" alt="${s.title}" class="song-thumb" />
+                <img src="${s.cover}" alt="${s.title}" class="song-thumb" draggable="false" />
                 <div class="song-info">
                     <h4>${escapeHtml(s.title)}</h4>
                     <p>${escapeHtml(s.artist)}</p>
