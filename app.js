@@ -263,6 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const queueBtn = document.getElementById("queue-btn");
     const queueDrawer = document.getElementById("queue-drawer");
     const closeDrawerBtn = document.getElementById("close-drawer");
+    const drawerBackdrop = document.getElementById("drawer-backdrop");
 
     // --- 4. Initialization ---
     function init() {
@@ -334,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let isDragging = false;
         let startX = 0;
         let currentX = 0;
-        const dragThreshold = 50; // pixels to swap track
+        const dragThreshold = 55; // pixels to swap track
 
         trackTrack.addEventListener("pointerdown", (e) => {
             if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -349,10 +350,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!isDragging) return;
             currentX = e.clientX;
 
-            // hardware-accelerated micro shift to provide immediate response
+            // hardware-accelerated linear translation tracking
             const deltaX = currentX - startX;
-            const rotationY = Math.max(-14, Math.min(14, deltaX * 0.05));
-            trackTrack.style.transform = `rotateY(${rotationY}deg)`;
+            trackTrack.style.transform = `translateX(${deltaX * 0.4}px)`;
             trackTrack.style.transition = "none";
         });
 
@@ -529,6 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     } else {
                         loadTrack(targetIndex, true);
                     }
+                    closeDrawer(); // Automatically close drawer upon song selection
                 }
             });
 
@@ -613,7 +614,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- 12. Setup Handlers ---
+    // --- 12. Shared Drawer Helpers ---
+    function closeDrawer() {
+        queueDrawer.classList.remove("open");
+        document.body.classList.remove("drawer-open");
+        if (drawerBackdrop) drawerBackdrop.classList.remove("active");
+    }
+
+    function openDrawer() {
+        queueDrawer.classList.add("open");
+        document.body.classList.add("drawer-open");
+        if (drawerBackdrop) drawerBackdrop.classList.add("active");
+    }
+
+    // --- 13. Setup Handlers ---
     function setupEventListeners() {
         // Playback Buttons
         playBtn.addEventListener("click", togglePlay);
@@ -632,27 +646,24 @@ document.addEventListener("DOMContentLoaded", () => {
             repeatBtn.title = isRepeat ? "Repeat Single On" : "Repeat Off";
         });
 
-        // Toggle Drawer Sheets
+        // Toggle Drawer Sheets with backdrop logic
         queueBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            const isOpen = queueDrawer.classList.toggle("open");
+            const isOpen = queueDrawer.classList.contains("open");
             if (isOpen) {
-                document.body.classList.add("drawer-open");
+                closeDrawer();
             } else {
-                document.body.classList.remove("drawer-open");
+                openDrawer();
             }
         });
 
-        closeDrawerBtn.addEventListener("click", () => {
-            queueDrawer.classList.remove("open");
-            document.body.classList.remove("drawer-open");
-        });
+        closeDrawerBtn.addEventListener("click", closeDrawer);
+        drawerBackdrop.addEventListener("click", closeDrawer);
 
         // Hide Side Drawer on Backdrop Click
         document.addEventListener("click", (e) => {
             if (!queueDrawer.contains(e.target) && e.target !== queueBtn) {
-                queueDrawer.classList.remove("open");
-                document.body.classList.remove("drawer-open");
+                closeDrawer();
             }
         });
 
@@ -715,7 +726,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 13. Helpers ---
+    // --- 14. Helpers ---
     function formatTime(seconds) {
         if (isNaN(seconds) || seconds < 0) return "0:00";
         const mins = Math.floor(seconds / 60);
