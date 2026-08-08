@@ -1,35 +1,32 @@
 :root {
-    /* Color Palette */
-    --accent: #0071e3;
-    --accent-hover: #0077ed;
-    --accent-glow: rgba(0, 113, 227, 0.3);
+    /* Premium Visual Constants */
+    --accent: #ffffff;
+    --accent-glow: rgba(255, 255, 255, 0.2);
+    --accent-blue: #0071e3;
 
-    --glass-bg: rgba(20, 20, 25, 0.65);
-    --glass-panel: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.12);
-    --glass-hover: rgba(255, 255, 255, 0.08);
 
     --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.68);
-    --text-muted: rgba(255, 255, 255, 0.42);
+    --text-secondary: rgba(255, 255, 255, 0.65);
+    --text-muted: rgba(255, 255, 255, 0.4);
 
-    --bg-dark: #08080a;
+    --radius-panel: 24px;
+    --radius-card: 20px;
+    --radius-pill: 999px;
 
-    /* Layout & Geometry */
-    --radius-app: 24px;
-    --radius-panel: 18px;
-    --radius-item: 12px;
-    --radius-pill: 100px;
+    /* Responsive Variable Layout Spacers */
+    --card-width: 310px;
+    --card-height: 400px;
+    --card-offset-1: 195px;
+    --card-offset-2: 370px;
 
-    /* Motion System */
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --transition-fast: 0.2s var(--ease-out);
-    --transition-smooth: 0.35s var(--ease-out);
-    --transition-bg: 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+    /* Transition Mechanics */
+    --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+    --transition-smooth: 0.45s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* --- Base Resets --- */
+/* Base Resets */
 *,
 *::before,
 *::after {
@@ -40,7 +37,7 @@
 }
 
 body {
-    background-color: var(--bg-dark);
+    background-color: #050508;
     color: var(--text-primary);
     font-family:
         "Inter",
@@ -51,478 +48,462 @@ body {
         sans-serif;
     min-height: 100vh;
     height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
-    padding: 24px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Dynamic Immersive Background --- */
+body.drawer-open {
+    overflow: hidden;
+    touch-action: none; /* Block viewport swipe behaviors when mobile queue sheet is active */
+}
+
+/* Dynamic Fading Backdrops */
 .dynamic-bg {
     position: fixed;
     inset: -40px;
-    z-index: -1;
+    z-index: -2;
     background-size: cover;
     background-position: center;
-    filter: blur(70px) brightness(0.42) saturate(140%);
+    filter: blur(60px) brightness(0.35) saturate(140%);
     transform: scale(1.08);
-    transition: background-image var(--transition-bg);
+    opacity: 0;
+    transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: none;
 }
 
-.dynamic-bg::after {
-    content: "";
-    position: absolute;
+.dynamic-bg.active {
+    opacity: 1;
+}
+
+.bg-vignette {
+    position: fixed;
     inset: 0;
     background: radial-gradient(
         circle at center,
-        transparent 20%,
-        var(--bg-dark) 90%
+        transparent 30%,
+        rgba(5, 5, 8, 0.85) 100%
     );
-    opacity: 0.8;
+    z-index: -1;
+    pointer-events: none;
 }
 
-/* --- Main App Wrapper --- */
-.app-container {
-    width: 100%;
-    max-width: 1060px;
-    height: 100%;
-    max-height: 730px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-app);
-    box-shadow:
-        0 32px 80px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    padding: 24px 28px;
-    gap: 16px;
-    overflow: hidden;
-}
-
-/* --- Header Section & Search Alignment --- */
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    padding-top: 6px; /* Aligns visually with left artwork top border */
-    padding-bottom: 2px;
-    padding-inline: 6px;
-}
-
-.search-box {
-    background: rgba(0, 0, 0, 0.28);
-    padding: 9px 16px;
-    border-radius: var(--radius-pill);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 235px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: var(--transition-fast);
-}
-
-.search-box:focus-within {
-    border-color: var(--accent);
-    background: rgba(0, 0, 0, 0.45);
-    box-shadow: 0 0 12px var(--accent-glow);
-}
-
-.search-box:focus-within i {
-    color: var(--accent);
-}
-
-.search-box i {
-    flex-shrink: 0;
-    color: var(--text-muted);
-    font-size: 13px;
-}
-
-.search-box input {
-    flex: 1;
-    min-width: 0;
-
-    background: transparent;
-    border: none;
-    outline: none;
-
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 400;
-}
-
-.search-box input::placeholder {
-    color: var(--text-muted);
-    opacity: 0.8;
-}
-
-/* Status Indicator Badge */
-.status-indicator {
-    padding: 6px 12px;
-    border-radius: 999px;
-
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-
-    color: var(--text-secondary);
-
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.pulse {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #30d158;
-    flex-shrink: 0;
-    box-shadow: none;
-    animation: none;
-}
-
-@keyframes statusPulse {
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.4;
-        transform: scale(0.85);
-    }
-}
-
-/* --- Main Content Grid --- */
-.main-content {
-    display: grid;
-    grid-template-columns: 1fr 345px;
-    gap: 32px;
-    height: 100%;
-    min-height: 0;
-}
-
-/* --- Left: Now Playing Stage --- */
-.now-playing-section {
+/* Main Viewport Grid */
+.app-viewport {
+    width: 100vw;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
-    padding: 4px 12px 8px;
-    height: 100%;
-    min-height: 0;
-}
-
-/* Album Artwork */
-.artwork-wrapper {
-    width: 100%;
-    max-width: 272px;
-    aspect-ratio: 1;
-
+    justify-content: center;
     overflow: hidden;
     position: relative;
-
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-
-    transition:
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
+    padding-bottom: 120px;
 }
 
-.main-artwork {
+/* Grab Cursor System & Carousel Track */
+.carousel-section {
     width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-
-    transition: opacity 0.25s ease;
-}
-
-.artwork-wrapper:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
-}
-
-/* Track Metadata Typography */
-.track-meta {
-    text-align: center;
-    width: 100%;
-    max-width: 390px;
-    margin: 10px 0 4px;
-}
-
-.primary-meta h1 {
-    font-size: 20.5px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.25;
-}
-
-.primary-meta h2 {
-    font-size: 14.5px;
-    color: var(--accent);
-    font-weight: 500;
-    margin-top: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.secondary-meta {
-    font-size: 11.5px;
-    color: var(--text-muted);
-    font-weight: 400;
-    margin-top: 5px;
-    letter-spacing: 0.01em;
-}
-
-/* Playback Control Deck */
-.playback-interface {
-    width: 100%;
-    max-width: 390px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-/* Thicker & Drag-Friendly Progress Slider */
-.progress-area {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.time-stamps {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.progress-bar-container {
-    padding: 8px 0; /* Larger touch / click target area */
-    cursor: pointer;
-}
-
-.progress-bg {
-    height: 5px; /* Thicker progress bar */
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: var(--radius-pill);
-    overflow: hidden;
-    position: relative;
-    transition: height var(--transition-fast);
-}
-
-.progress-bar-container:hover .progress-bg {
-    height: 7px;
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.progress-fill {
-    height: 100%;
-    background: var(--text-primary);
-    border-radius: var(--radius-pill);
-    width: 0%;
-    transition:
-        width 0.08s linear,
-        background-color var(--transition-fast);
-}
-
-.progress-bar-container:hover .progress-fill {
-    background: var(--accent);
-}
-
-/* Balanced Control Buttons with Expanded Click Areas */
-.player-controls {
+    max-width: 1200px;
+    height: 480px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 22px;
+    position: relative;
+    overflow: visible;
 }
 
-.btn-icon {
-    background: none;
+.carousel-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1200px;
+    transform-style: preserve-3d;
+    cursor: grab;
+    transition: transform 0.4s var(--ease-out);
+}
+
+/* Viewport Global Drag cursor overrides */
+body.dragging,
+body.dragging * {
+    cursor: grabbing !important;
+    user-select: none !important;
+}
+
+/* Carousel Album Cards */
+.carousel-card {
+    position: absolute;
+    width: var(--card-width);
+    height: var(--card-height);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+    cursor: grab;
+    user-select: none;
+    transition:
+        transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+        opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+        visibility 0.5s ease;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.carousel-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+    pointer-events: none;
+}
+
+.carousel-card.active-card:hover img {
+    transform: scale(1.04);
+}
+
+/* Glass Card Metal Overlay */
+.card-meta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.85) 0%,
+        rgba(0, 0, 0, 0.4) 60%,
+        transparent 100%
+    );
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px;
+    text-align: center;
+    transform: translateY(0);
+    transition:
+        transform 0.4s var(--ease-out),
+        opacity 0.4s ease;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+}
+
+.card-artist {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.carousel-card:not(.active-card) .card-meta {
+    opacity: 0.4;
+    transform: translateY(5px);
+}
+
+/* Hardware Accelerated transform stacks */
+.carousel-card.pos-hidden {
+    transform: translateX(0) scale(0.4) translateZ(-400px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    visibility: hidden; /* Fully exclude hidden layers from peering */
+}
+
+.carousel-card.pos-far-prev {
+    transform: translateX(calc(-1 * var(--card-offset-2))) scale(0.65)
+        rotateY(32deg) translateZ(-200px);
+    opacity: 0.15;
+    pointer-events: auto;
+    z-index: 2;
+    visibility: visible;
+}
+
+.carousel-card.pos-prev {
+    transform: translateX(calc(-1 * var(--card-offset-1))) scale(0.8)
+        rotateY(18deg) translateZ(-100px);
+    opacity: 0.55;
+    pointer-events: auto;
+    z-index: 5;
+    visibility: visible;
+}
+
+.carousel-card.pos-active {
+    transform: translateX(0) scale(1.05) translateZ(100px);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 10;
+    box-shadow:
+        0 35px 70px rgba(0, 0, 0, 0.85),
+        0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+    visibility: visible;
+}
+
+.carousel-card.pos-next {
+    transform: translateX(var(--card-offset-1)) scale(0.8) rotateY(-18deg)
+        translateZ(-100px);
+    opacity: 0.55;
+    pointer-events: auto;
+    z-index: 5;
+    visibility: visible;
+}
+
+.carousel-card.pos-far-next {
+    transform: translateX(var(--card-offset-2)) scale(0.65) rotateY(-32deg)
+        translateZ(-200px);
+    opacity: 0.15;
+    pointer-events: auto;
+    z-index: 2;
+    visibility: visible;
+}
+
+/* Premium Floating Capsule Control Pill */
+.control-capsule {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 80px);
+    max-width: 860px;
+    height: 76px;
+    background: rgba(20, 20, 25, 0.45);
+    backdrop-filter: blur(35px) saturate(200%);
+    -webkit-backdrop-filter: blur(35px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-pill);
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    z-index: 150;
+    transition: var(--transition-smooth);
+}
+
+.capsule-controls-left,
+.capsule-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.capsule-btn {
+    background: transparent;
     border: none;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.65);
     cursor: pointer;
-    width: 42px; /* Increased touch area */
-    height: 42px;
+    width: 44px; /* Ensure optimal touch index targets */
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 15px;
-    transition: var(--transition-fast);
+    transition: var(--transition-smooth);
 }
 
-.btn-icon.btn-lg {
-    font-size: 19px;
-    width: 46px;
-    height: 46px;
-    color: var(--text-primary);
-}
-
-.btn-icon:hover {
-    color: var(--text-primary);
+.capsule-btn:hover {
+    color: #fff;
     background: rgba(255, 255, 255, 0.08);
     transform: scale(1.05);
 }
 
-.btn-icon:active {
-    transform: scale(0.94);
+.capsule-btn:active {
+    transform: scale(0.95);
 }
 
-.btn-icon.active {
-    color: var(--accent);
+.capsule-btn.active {
+    color: var(--accent-blue) !important;
     background: rgba(0, 113, 227, 0.15);
 }
 
-.btn-play {
-    width: 52px;
-    height: 52px;
-    border: none;
-    border-radius: 50%;
-    background: #ffffff;
-    color: #111111;
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 17px;
-
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.12),
-        0 6px 16px rgba(0, 0, 0, 0.12);
-
-    transition:
-        background-color 0.2s ease,
-        box-shadow 0.2s ease,
-        opacity 0.2s ease;
-}
-
-.btn-play i {
-    margin-left: 2px;
-    transition: margin 0.2s ease;
-}
-
-.btn-play.playing i {
-    margin-left: 0;
-}
-
-.btn-play:hover {
-    background: #fafafa;
-    box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.14),
-        0 8px 20px rgba(0, 0, 0, 0.14);
-}
-
-.btn-play:active {
-    opacity: 0.9;
-    box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.12),
-        inset 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
-.btn-play:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.35);
-    outline-offset: 4px;
-}
-
-/* Minimal Apple-style Volume Control */
-.volume-stack {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 170px;
-    margin: 6px auto 0;
-}
-
-.volume-stack i {
-    width: 14px;
-    font-size: 12px;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: color 0.18s ease;
-}
-
-.volume-stack i:hover {
-    color: var(--text-primary);
-}
-
-.volume-stack input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
+/* Embedded Mini display inside pill */
+.mini-player-display {
     flex: 1;
-    height: 3px;
-    border-radius: 999px;
-    background: linear-gradient(
-        to right,
-        var(--text-primary) 80%,
-        rgba(255, 255, 255, 0.14) 80%
-    );
-    cursor: pointer;
-    outline: none;
-}
-
-.volume-stack input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: none;
-    transition: transform 0.18s ease;
-}
-
-.volume-stack input[type="range"]:hover::-webkit-slider-thumb {
-    transform: scale(1.1);
-}
-/* --- Right: Queue & Playlist --- */
-.queue-section {
-    background: var(--glass-panel);
+    max-width: 320px;
+    height: 52px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--radius-panel);
-    padding: 16px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 16px;
+    transition: var(--transition-smooth);
+}
+
+.mini-cover {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mini-meta {
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
+    min-width: 0;
+    flex: 1;
 }
 
-.section-header {
+.mini-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mini-artist {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+.mini-time-info {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    gap: 3px;
+}
+
+/* Precise Progress Seek Area & Overlays */
+.mini-progress-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12px; /* Large, responsive hitbox overlay */
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    z-index: 10;
+}
+
+.mini-progress-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: height 0.15s ease;
+}
+
+.mini-progress-area:hover .mini-progress-track {
+    height: 5px;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: #fff;
+    width: 0%;
+}
+
+/* Sliding Volume Controller wrapper */
+.volume-controller {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.volume-slider-wrapper {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    display: flex;
+    align-items: center;
+}
+
+.volume-controller:hover .volume-slider-wrapper,
+.volume-controller:focus-within .volume-slider-wrapper {
+    width: 85px;
+    margin-right: 6px;
+}
+
+.volume-slider-wrapper input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-slider-wrapper input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Sliding Frosted Side Panel Drawer */
+.queue-drawer {
+    position: fixed;
+    top: 24px;
+    right: -360px;
+    width: 340px;
+    height: calc(100vh - 48px);
+    background: rgba(10, 10, 15, 0.65);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-panel);
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.6);
+    z-index: 250;
+    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.queue-drawer.open {
+    right: 24px;
+}
+
+.drawer-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding: 0 2px;
+    margin-bottom: 20px;
 }
 
-.section-header h3 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.01em;
+.drawer-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.drawer-title-group h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
 }
 
 .badge {
@@ -535,214 +516,194 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Independent Scrollable Queue (HIDDEN SCROLLBAR) */
-#playlist {
+.btn-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    width: 44px; /* Optimal comfortable touch targets */
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: var(--transition-smooth);
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.drawer-playlist {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-
-    /* Scrollbar Hiding Standards */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE & Edge */
+    gap: 6px;
+    scrollbar-width: none;
 }
 
-#playlist::-webkit-scrollbar,
-.custom-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-    width: 0;
-    height: 0;
+.drawer-playlist::-webkit-scrollbar {
+    display: none;
 }
 
-/* Playlist Song Card (Increased Row Height & Softer Saturation) */
+/* Playlist Queue Song Rows */
 .song-row {
-    display: grid;
-    grid-template-columns: 40px 1fr auto;
-    gap: 12px;
-    padding: 10px 12px; /* Increased height & padding */
-    border-radius: var(--radius-item);
+    display: flex;
     align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
     cursor: pointer;
-    background: transparent;
+    transition: var(--transition-smooth);
     border: 1px solid transparent;
-    transition: var(--transition-fast);
-    user-select: none;
-    min-height: 52px;
 }
 
 .song-row:hover {
-    background: var(--glass-hover);
-    border-color: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Active Row - Desaturated by 10% for subtle elegance */
 .song-row.active {
-    background: rgba(0, 113, 227, 0.09); /* Reduced saturation */
-    border-color: rgba(0, 113, 227, 0.22);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .song-thumb {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
     object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .song-info {
-    overflow: hidden;
+    flex: 1;
+    min-width: 0;
 }
 
 .song-info h4 {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.25;
-}
-
-.song-row.active .song-info h4 {
-    color: var(--accent);
 }
 
 .song-info p {
-    font-size: 11.5px;
-    color: var(--text-muted);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .song-duration {
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--text-muted);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
     font-variant-numeric: tabular-nums;
 }
 
-/* Slower & Smoother Playing Indicator Bars */
-.playing-bars {
-    display: flex;
-    gap: 2.5px;
-    height: 12px;
-    align-items: flex-end;
-}
-
-.bar {
-    width: 2.5px;
-    background: var(--accent);
-    border-radius: 1px;
-    animation: playPulse 1.3s infinite ease-in-out alternate; /* Smoother pulse */
-}
-
-.bar:nth-child(2) {
-    animation-delay: 0.3s;
-}
-.bar:nth-child(3) {
-    animation-delay: 0.6s;
-}
-
-@keyframes playPulse {
-    0% {
-        height: 3px;
-    }
-    100% {
-        height: 12px;
-    }
-}
-
-/* --- Responsive Layouts --- */
-
+/* Responsive Adaptive Sizing & Layout overrides */
 @media (max-width: 900px) {
-    body {
-        padding: 16px;
+    :root {
+        --card-width: 250px;
+        --card-height: 320px;
+        --card-offset-1: 130px;
+        --card-offset-2: 240px;
     }
-
-    .app-container {
-        height: 100%;
-        max-height: none;
-        padding: 20px;
+    .app-viewport {
+        padding-bottom: 110px;
     }
-
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        overflow-y: auto;
+    .carousel-section {
+        height: 385px;
     }
-
-    .now-playing-section {
-        padding: 0;
-        gap: 16px;
+    .control-capsule {
+        bottom: 24px;
+        width: calc(100% - 40px);
+        padding: 0 16px;
+        height: 72px;
     }
-
-    .artwork-wrapper {
-        max-width: 220px;
+    .mini-player-display {
+        margin: 0 8px;
+        padding: 0 8px;
     }
-
-    .queue-section {
-        min-height: 290px;
-        height: 290px;
-    }
-}
-
-@media (max-width: 520px) {
-    body {
-        padding: 0;
-    }
-
-    .app-container {
-        border-radius: 0;
-        border: none;
-        height: 100vh;
-        padding: 16px;
-        gap: 14px;
-    }
-
-    .app-header {
-        flex-direction: column-reverse;
-        align-items: stretch;
-        gap: 10px;
-        padding-top: 0;
-    }
-
-    .search-box {
-        width: 100% !important;
-    }
-
-    .status-indicator {
-        align-self: flex-end;
-    }
-
-    .artwork-wrapper {
-        max-width: 185px;
-    }
-
-    .primary-meta h1 {
-        font-size: 18px;
-    }
-
-    .primary-meta h2 {
-        font-size: 13.5px;
-    }
-
-    .playback-interface {
+    .capsule-controls-left,
+    .capsule-controls-right {
         gap: 12px;
     }
-
-    .player-controls {
-        gap: 14px;
+    .volume-controller {
+        display: none; /* Auto-simplify on medium viewports */
     }
+}
 
-    .btn-play {
-        width: 48px;
+@media (max-width: 600px) {
+    :root {
+        --card-width: 220px;
+        --card-height: 295px;
+        --card-offset-1: 90px;
+        --card-offset-2: 170px;
+    }
+    .carousel-section {
+        height: 340px;
+    }
+    .control-capsule {
+        height: 68px;
+        bottom: 16px;
+        width: calc(100% - 24px);
+        padding: 0 10px;
+    }
+    .capsule-controls-left {
+        gap: 8px;
+    }
+    .capsule-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
+    .mini-player-display {
+        margin: 0 6px;
+        padding: 0 8px;
         height: 48px;
     }
+    .mini-cover {
+        width: 30px;
+        height: 30px;
+    }
+    .mini-time-info {
+        display: none; /* Hide timeline metadata on compact mobile viewports */
+    }
+    .capsule-controls-right button:not(#queue-btn) {
+        display: none; /* Simplify completely for core control priorities */
+    }
 
-    .queue-section {
-        height: 240px;
-        padding: 12px;
+    /* Transform Sidebar Drawer into a proper mobile Overlay Bottom Sheet with safe margins */
+    .queue-drawer {
+        top: 12px;
+        right: -100%;
+        width: calc(100% - 24px);
+        height: calc(100vh - 24px);
+        border-radius: var(--radius-panel);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
+        z-index: 300; /* Fully overlay over control elements */
+    }
+    .queue-drawer.open {
+        right: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    :root {
+        --card-width: 185px;
+        --card-height: 250px;
+        --card-offset-1: 65px;
+        --card-offset-2: 125px;
+    }
+    .carousel-section {
+        height: 290px;
     }
 }
